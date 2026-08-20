@@ -34,7 +34,7 @@ public class RefreshToken {
         return expiryDate.isBefore(LocalDateTime.now());
     }
 
-    public void updateToken(String newtoken, LocalDateTime newExpirDate){
+    public void updateToken(String newtoken, LocalDateTime newExpirDate){ //토큰 재발금
         this.token = newtoken;
         this.expiryDate = newExpirDate;
     }
