@@ -4,6 +4,7 @@ import com.oauthstudy.domain.entity.RefreshToken;
 import com.oauthstudy.domain.repository.RefreshTokenRepository;
 import com.oauthstudy.global.exception.InvalidTokenException;
 import com.oauthstudy.global.security.JwtProvider;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ public class AuthController {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
 
+    @Transactional //DB갱신
     @PostMapping("/auth/refresh")
     public ResponseEntity<?> refresh(@RequestBody Map<String, String> request) {
 
@@ -40,7 +42,7 @@ public class AuthController {
         String newAccessToken = jwtProvider.generateAccessToken(userId);
         String newRefreshToken = jwtProvider.generateRefreshToken(userId);
 
-        savedToken.updateToken(newRefreshToken, LocalDateTime.now().plusDays(14));
+        savedToken.updateToken(newRefreshToken);
 
         return ResponseEntity.ok(Map.of(
                 "accessToken", newAccessToken,

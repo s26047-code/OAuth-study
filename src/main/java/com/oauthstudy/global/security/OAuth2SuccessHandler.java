@@ -52,21 +52,29 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String accessToken = jwtProvider.generateAccessToken(user.getId());
         String refreshToken = jwtProvider.generateRefreshToken(user.getId()); //토큰 발급
 
-        refreshTokenRepository.findByUserId(user.getId()) //토큰 갱신
+        refreshTokenRepository.findByUserId(user.getId())
                 .ifPresentOrElse(
-                        existing -> existing.updateToken(refreshToken, LocalDateTime.now().plusDays(14)),
+                        existing -> existing.updateToken(refreshToken),
                         () -> refreshTokenRepository.save(
                                 RefreshToken.builder()
-                                        .token(refreshToken)
                                         .userId(user.getId())
-                                        .expiryDate(LocalDateTime.now().plusDays(14))
+                                        .token(refreshToken)
                                         .build()
                         )
                 );
 
-        response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(
-                "{\"accessToken\":\"" + accessToken + "\",\"refreshToken\":\"" + refreshToken + "\"}"
-        );
+       // response.setContentType("application/json;charset=UTF-8");
+        // response.getWriter().write(
+         //       "{\"accessToken\":\"" + accessToken + "\",\"refreshToken\":\"" + refreshToken + "\"}"
+        //); 위의 코드는 json 메세지만 보내줄 뿐 실제로 프론트와 연결도지 않는다.
+
+        String redirectUrl =
+                "http://localhost:3000/oauth/callback" //프론트 url으로 직접 연결.
+                        + "?accessToken=" + accessToken //쿼티 파라미터
+                        + "&refreshToken=" + refreshToken;
+
+        response.sendRedirect(redirectUrl);
+
+        //또는 쿠키에 넣고 프론트로 Redirect 역시 가능하다고 한다.
     }
 }
